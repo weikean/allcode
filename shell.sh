@@ -179,6 +179,15 @@ cat ~/.bash_history | sort |uniq -c | sort -rn | head -n 10
 # 例如内容如下：
 # 12aa*lkjskdj
 # alskdflkskdjflkjj
+#[^ ] 匹配不在指定范围内的字符
+sum=0
+for line in `cat $1`
+do
+	r=echo -n $line | sed 's/[^0-9]//g'| wc -m
+	echo $r
+	sum=$[$sum+$r]
+done
+	echo $sum
 
 
 # 22、写一个shell脚本，先判断一下你linux的版本和bash版本，然后看看是否需要升级，
@@ -201,21 +210,63 @@ cat ~/.bash_history | sort |uniq -c | sort -rn | head -n 10
 # eth0 input: 1000bps
 # eth0 output : 200000bps
 
+log=/home/ubuntu/mynet.log
+
+while :
+do
+echo `date +'%F %T'` >> $log
+sar -n DEV 1 3 > ./tmp.log
+
+a=`grep "Average" ./tmp.log | grep "eth0" | awk '{print $5*8000}'`
+b=`grep "Average" ./tmp.log | grep "eth0" | awk '{print $6*8000}'`
+echo "eth0 input: $a bps" >> $log 
+echo "eth0 output: $b bps" >> $log
+sleep 60 
+done
 
 # 24、统计当前通过 80 端口建立连接的进程数量
 
+netstat -an | grep ":80" |grep "ESTABLISHED"| wc -l
+
 # 25、统计当前有多少ip 访问量，包括tcp和udp 协议
+
+netstat -anp | egrep 'tcp|udp' | awk '{print $5}'| wc -l
 
 # 26、系统负载很高，通过top以及 ps 查看，
 # 因为cron计划任务在运行一个 cleanmem.sh 的脚本，
 # 导致很多 sh 命令在运行，写个脚本，杀死所有的 sh 命令。
 
+for pid in `ps -aux |grep 'clearman.sh'| awk '{print $2}'`
+do 
+	kill -9 $pid
+	echo "$pid has been killed"
+done
+
 
 # 27、写脚本，判断Linux服务器是否开启了 web 服务，
 # 如果开启了，判断跑的是什么服务，httpd? 还是 nginx？或者其他的服务。
 
+service=`netstat -lnp | grep ":80" | awk	-F '/' '{print $2}'`
+if [ ! service ]
+then
+	echo $service is running
+else
+	echo "No WEB service"
+fi
 # 28、加入服务器上跑的是 httpd，写个脚本，每分钟检测一次 httpd 服务是否存在，
 # 如果不存在，就启动它。
+
+while :
+do
+stat=`ps -aux | grep "httpd" | grep "grep httpd"`
+if [ -n stat ]
+then 
+	/usr/local/apache2/bin/apachectl start
+else
+	echo "httpd is running"
+sleep 60	
+done 
+fi
 
 # 29、创建一个带删除和添加选项的用户的脚本
 # - 只支持三个选项 ‘--del’ ‘--add’ --help输入其他选项报错。
@@ -230,10 +281,50 @@ cat ~/.bash_history | sort |uniq -c | sort -rn | head -n 10
 #   例如 adddel.sh --add user1,user2,user3.......
 # - 不允许存在明显bug。
 
+# 太麻烦了
+
+
 # 30、计算 100 以内能被 3 整除的数的总和。
 
+sum=0
+for i in `seq 1 100`
+do
+if [ `expr $i % 3` -eq 0 ]
+	then
+		sum=$(($i+$sum))
+fi
+done
+echo "sum is $sum"
+
+# 31、写一个交互脚本，直接运行脚本，出现提示，选择一个数字：
+# 1：重启 httpd 服务，2：重启 mysqld 服务 3：重启vsftpd服务，
+# 加选项--httpd重启 httpd 服务，加 --myslq 会重启 myslqd 服务，
+# 加 --ftp 会重启vsftpd服务。
 
 
+
+
+# 32、猜数字的小游戏；
+# 运行程序后，提示用户输入一个0-9的数字，如果是非数字，那么就提示用户输入数字；
+# 如果用户猜中，提示用户猜对了；如果用户没有猜中，那么就提示用户重新输入一个数字；
+# 如果，用户连续五次都没有猜中，则提示用户，24小时后再来玩这个游戏；
+
+
+
+# 33、提示用户输入网卡的名字，然后我们用脚本输出网卡的ip。
+# 34、脚本可以带参数也可以不带，参数可以有多个，每个参数必须是一个目录，
+#  脚本检查参数个数，若等于0，则列出当前目录本身；否则，显示每个参数包含的子目录。
+# 35、
+
+#     第一个参数为URL，即可下载的文件；第二个参数为目录，即下载后保存的位置；
+#     如果用户给的目录不存在，则提示用户是否创建；如果创建就继续执行，否则，函数返回一个51的错误值给调用脚本；
+#     如果给的目录存在，则下载文件；下载命令执行结束后测试文件下载成功与否；如果成功，则返回0给调用脚本，否则，返回52给调用脚本；
+
+# 36、用 for 循环列出当前目录的一级子目录，不要用 find 命令
+# 37、打印乘法口诀
+# 38、写一个脚本，让用户输入一个数字，然后判断是否是数字，如果是数字，则打印数字，否则一直让用户输入，直到是数字为止。参考第16题。16题没有循环。
+# 39、while 循环实现每隔 10s 执行一次 w 命令
+# 40、while 循环求数字1 到 10 相加的和
 
 
 
