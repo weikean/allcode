@@ -301,32 +301,192 @@ echo "sum is $sum"
 # 加选项--httpd重启 httpd 服务，加 --myslq 会重启 myslqd 服务，
 # 加 --ftp 会重启vsftpd服务。
 
+if [ $# -eq 0 ]; 
+then
+echo "1：重启 httpd 服务"
+echo "2: 重启 mysqld 服务"
+echo "3: 重启vsftpd服务"
+read -p "Please choose a number: " n
 
+case $n in
+	1)
+	`service httpd restart` 
+	;;
 
+	2)
+	`service mysqld restart`
+	;;
 
-# 32、猜数字的小游戏；
+	3)
+	`service vsftpd restart`
+	;;
+
+	*)
+	echo "num is wrong"
+	;;
+
+esac
+
+elif [ "$1" == "--mysqld" ];
+	then `service mysqld restart` 
+
+elif [ "$1" == "--httpd" ];
+	then `service httpd restart`
+
+elif [ "$1" == "--vsftpd" ];
+	then `service vsftpd restart`
+
+else echo "option is wrong"
+
+fi
+
+# 32、猜7数字的小游戏；
 # 运行程序后，提示用户输入一个0-9的数字，如果是非数字，那么就提示用户输入数字；
 # 如果用户猜中，提示用户猜对了；如果用户没有猜中，那么就提示用户重新输入一个数字；
 # 如果，用户连续五次都没有猜中，则提示用户，24小时后再来玩这个游戏；
 
+wcount=0
+while [[ wcount < 6 ]]; 
+do
+read -p "Please input a num from 0-9: " n
 
+if [ -n `echo $n |awk '/^[0-9]$/'` ]; then
+	echo "Input is not a number from 0-9"
+
+elif [[ "$n" -eq 7 ]]; then
+	echo "You win the game"
+	exit 1;
+else
+	echo "your answer is wrong"
+	wcount=$((wcount+1))
+	#wcount=$[$wcount+1	
+	#wcount=$[expr $wcount + 1]
+	#let wcount=wcount+1
+fi
+
+done
+
+echo "24小时后再来玩这个游戏"
 
 # 33、提示用户输入网卡的名字，然后我们用脚本输出网卡的ip。
+
+read -p "Please input encap name: " nname
+r=`ifconfig | grep -A2 "$nname" | grep "inet addr" | awk -F: '{print $2}'| awk '{print $1}'`
+if [ -n $r ]; then
+	echo "$nname ip address is $r"
+else
+	echo "$nname is not exist"
+fi
+
+
 # 34、脚本可以带参数也可以不带，参数可以有多个，每个参数必须是一个目录，
-#  脚本检查参数个数，若等于0，则列出当前目录本身；否则，显示每个参数包含的子目录。
+#  脚本检查参数个数，若等于0，则列出当前目录本身；否则，示每个参数包含的子目录。
+
+if [ "$#" -eq 0 ]; then
+	ls -l `pwd`
+
+else
+for d in `seq 1 $#`
+do
+	n=`echo $@ | cut -d " " -f $d`
+	ls -l $n | grep '^d'
+done
+
+fi
 # 35、
 
-#     第一个参数为URL，即可下载的文件；第二个参数为目录，即下载后保存的位置；
-#     如果用户给的目录不存在，则提示用户是否创建；如果创建就继续执行，否则，函数返回一个51的错误值给调用脚本；
-#     如果给的目录存在，则下载文件；下载命令执行结束后测试文件下载成功与否；如果成功，则返回0给调用脚本，否则，返回52给调用脚本；
+# 第一个参数为URL，即可下载的文件；第二个参数为目录，即下载后保存的位置；
+# 如果用户给的目录不存在，则提示用户是否创建；如果创建就继续执行，
+# 否则，函数返回一个51的错误值给调用脚本；
+# 如果给的目录存在，则下载文件；下载命令执行结束后测试文件下载成功与否；
+# 如果成功，则返回0给调用脚本，否则，返回52给调用脚本；
+
+if [ $# != 2 ]; then
+	echo "option is wrong"
+	exit 1
+
+n=`grep "^d" $2`
+elif [[ -z $n ]]; then
+	read -p "目录不存在，是否创建目录 Y/N" r
+	case $r in 
+		y|Y)
+		`mkdir $2`
+		;;
+
+		n|N)
+		exit 51
+		;;
+
+		*)
+		;;
+	esac
+
+else
+	`cd $2`
+	`wget $1`
+	dr=$?
+
+	if [ $dr -ne 0 ]; then
+	echo "$1 下载失败" 
+	exit 52
+
+	else
+		echo "$1 下载成功"
+	fi
+fi
 
 # 36、用 for 循环列出当前目录的一级子目录，不要用 find 命令
+
+for d in `ls`
+do
+	if [ -d $d ]; then
+	echo "$d "
+	fi
+done
+
 # 37、打印乘法口诀
-# 38、写一个脚本，让用户输入一个数字，然后判断是否是数字，如果是数字，则打印数字，否则一直让用户输入，直到是数字为止。参考第16题。16题没有循环。
+
+for i in `seq 1 9`
+do
+	for j in `seq 1 $i` 
+	do
+	echo "$i * $j = $((i*j)) "
+	done
+	echo ""
+done
+
+# 38、写一个脚本，让用户输入一个数字，然后判断是否是数字，如果是数字，
+# 则打印数字，否则一直让用户输入，直到是数字为止。参考第16题。16题没有循环。
+
+while :
+do
+	read -p "Please input number to Stop this Program: " n
+	r=`echo $n | awk '/[0-9]+/'`
+	if [ $r ]; then
+		echo "your input is: " $n
+		echo "Program is quiting"
+		exit 1;
+	fi
+done
+
+echo 10 | awk '/[0-9]+/'
+
 # 39、while 循环实现每隔 10s 执行一次 w 命令
+
+while :
+do
+sleep 10
+w
+done
+
 # 40、while 循环求数字1 到 10 相加的和
-
-
+sum=0
+i=1
+while [[ i -le 10 ]]; do
+	sum=$[$sum+$i]
+	let i=i+1
+done
+echo "sum is" $sum
 
 
 
