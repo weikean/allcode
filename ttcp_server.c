@@ -165,16 +165,12 @@ int main(int argc, char const *argv[])
 		}
 
 		payloadMessage->length = ntohl(payloadMessage->length);
-
-		printf("payloadMessage->length= %d\n", payloadMessage->length);
-		printf("sessionmessage.length= %d\n", sessionmessage.length);
-
-
 		assert(payloadMessage->length == sessionmessage.length);
-
-		if (read_n(sockfd, payloadMessage->data, payloadMessage->length))
+		int32_t ret = 0;
+		if ((ret = read_n(sockfd, payloadMessage->data, payloadMessage->length)) !=  payloadMessage->length)
 		{
-			perror("read payloadMessage data");
+			perror("read payloadMessage data\n");
+			printf("ret = %d", ret);
 			exit(1);
 		}
 

@@ -185,7 +185,6 @@ int main(int argc, char const *argv[])
 		}
 
 		ack = ntohl(ack);
-		printf("ack ok= %d\n", ack);
 		assert(ack == length);
 	} 
 
